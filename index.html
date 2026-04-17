@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Habit Tracker</title>
+  <style>
+    body { font-family: Arial; background:#f3f4f6; padding:20px; }
+    table { border-collapse: collapse; width:100%; background:white; }
+    th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+    input[type="text"] { padding:8px; width:200px; }
+    button { padding:8px 12px; }
+    .circle {
+      width:60px; height:60px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:conic-gradient(black var(--progress), #ddd 0);
+      color:white; font-size:12px; margin:auto;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Advanced Habit Tracker</h2>
+
+<input id="habitInput" type="text" placeholder="Add habit" />
+<button onclick="addHabit()">Add</button>
+
+<br/><br/>
+
+<table id="habitTable">
+  <thead>
+    <tr>
+      <th>Habit</th>
+      <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<br/>
+<h3>Daily Progress</h3>
+<div id="progress"></div>
+
+<script>
+let habits = [];
+const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function addHabit() {
+  const name = document.getElementById("habitInput").value;
+  if (!name) return;
+  habits.push({ name, days: { Sun:false,Mon:false,Tue:false,Wed:false,Thu:false,Fri:false,Sat:false }});
+  document.getElementById("habitInput").value = "";
+  render();
+}
+
+function toggle(i, day) {
+  habits[i].days[day] = !habits[i].days[day];
+  render();
+}
+
+function render() {
+  const tbody = document.querySelector("#habitTable tbody");
+  tbody.innerHTML = "";
+
+  habits.forEach((h, i) => {
+    let row = `<tr><td>${h.name}</td>`;
+    days.forEach(d => {
+      row += `<td><input type='checkbox' ${h.days[d] ? "checked" : ""} onclick='toggle(${i}, "${d}")'></td>`;
+    });
+    row += "</tr>";
+    tbody.innerHTML += row;
+  });
+
+  renderProgress();
+}
+
+function renderProgress() {
+  const div = document.getElementById("progress");
+  div.innerHTML = "";
+
+  days.forEach(d => {
+    const total = habits.length;
+    const done = habits.filter(h => h.days[d]).length;
+    const percent = total === 0 ? 0 : Math.round((done/total)*100);
+
+    div.innerHTML += `
+      <div style="display:inline-block; text-align:center; margin:10px;">
+        <div class="circle" style="--progress:${percent}%">${percent}%</div>
+        <div>${d}</div>
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
