@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Habit Tracker</title>
+  <style>
+    body { font-family: Arial; background:linear-gradient(135deg,#667eea,#764ba2); padding:20px; color:#fff; }
+    h2 { text-align:center; }
+    table { border-collapse: collapse; width:100%; background:white; color:black; border-radius:10px; overflow:hidden; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+    input[type="text"] { padding:10px; width:220px; border-radius:6px; border:none; }
+    button { padding:10px 14px; border:none; border-radius:6px; cursor:pointer; }
+    .add-btn { background:#22c55e; color:white; }
+    .delete-btn { background:#ef4444; color:white; }
+    .circle {
+      width:60px; height:60px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:conic-gradient(#22c55e var(--progress), #ddd 0);
+      color:black; font-size:12px; margin:auto;
+      font-weight:bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🔥 Advanced Habit Tracker</h2>
+
+<div style="text-align:center; margin-bottom:20px;">
+  <input id="habitInput" type="text" placeholder="Add habit" />
+  <button class="add-btn" onclick="addHabit()">Add</button>
+</div>
+
+<table id="habitTable">
+  <thead>
+    <tr>
+      <th>Habit</th>
+      <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<br/>
+<h3 style="text-align:center;">Daily Progress</h3>
+<div id="progress" style="text-align:center;"></div>
+
+<script>
+let habits = JSON.parse(localStorage.getItem("habits")) || [];
+const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function saveData() {
+  localStorage.setItem("habits", JSON.stringify(habits));
+}
+
+function addHabit() {
+  const name = document.getElementById("habitInput").value;
+  if (!name) return;
+  habits.push({ name, days: { Sun:false,Mon:false,Tue:false,Wed:false,Thu:false,Fri:false,Sat:false }});
+  document.getElementById("habitInput").value = "";
+  saveData();
+  render();
+}
+
+function toggle(i, day) {
+  habits[i].days[day] = !habits[i].days[day];
+  saveData();
+  render();
+}
+
+function deleteHabit(i) {
+  habits.splice(i,1);
+  saveData();
+  render();
+}
+
+function render() {
+  const tbody = document.querySelector("#habitTable tbody");
+  tbody.innerHTML = "";
+
+  habits.forEach((h, i) => {
+    let row = `<tr><td>${h.name}</td>`;
+    days.forEach(d => {
+      row += `<td><input type='checkbox' ${h.days[d] ? "checked" : ""} onclick='toggle(${i}, "${d}")'></td>`;
+    });
+    row += `<td><button class='delete-btn' onclick='deleteHabit(${i})'>X</button></td>`;
+    row += "</tr>";
+    tbody.innerHTML += row;
+  });
+
+  renderProgress();
+}
+
+function renderProgress() {
+  const div = document.getElementById("progress");
+  div.innerHTML = "";
+
+  days.forEach(d => {
+    const total = habits.length;
+    const done = habits.filter(h => h.days[d]).length;
+    const percent = total === 0 ? 0 : Math.round((done/total)*100);
+
+    let color = percent === 100 ? "#22c55e" : percent >=50 ? "#eab308" : "#ef4444";
+
+    div.innerHTML += `
+      <div style="display:inline-block; text-align:center; margin:10px;">
+        <div class="circle" style="--progress:${percent}%; background:conic-gradient(${color} ${percent}%, #ddd 0);">
+          ${percent}%
+        </div>
+        <div>${d}</div>
+      </div>
+    `;
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
